@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="theme-color" content="#0b1220">
+<title>Commission Calculator</title>
+<style>
+:root{--navy:#080f20;--blue:#1687ff;--text:#101828;--muted:#64748b;--line:#dfe7f2;--soft:#f7f9fc;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.app{max-width:520px;margin:auto;min-height:100vh;background:#fff}
+.top{background:var(--navy);color:#fff;padding:28px 20px 25px;border-radius:0 0 28px 28px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;align-items:center;gap:12px}.brand-icon{width:48px;height:48px;border:1px solid #293449;border-radius:15px;display:grid;place-items:center;font-size:24px}.brand h1{font-size:21px;margin:0}.brand p{font-size:12px;color:#aab6ca;margin:5px 0 0}
+.top-actions{display:flex;gap:8px;align-items:center}.pill{background:#fff;color:#111827;border:0;border-radius:13px;padding:13px 14px;font-weight:800;font-size:12px;white-space:nowrap}
+.main{padding:22px 18px 30px}.intro{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.intro h2{font-size:24px;margin:0 0 7px}.intro p{font-size:13px;color:var(--muted);margin:0}.intro-icon{width:58px;height:58px;border:1px solid var(--line);border-radius:17px;display:grid;place-items:center;font-size:27px;background:#fbfcfe}
+.panel{border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:15px;background:#fff}
+.heading{font-size:12px;font-weight:850;letter-spacing:.7px;color:#64748b;margin:0 0 10px;text-transform:uppercase}
+.input{width:100%;height:53px;border:1.5px solid var(--line);border-radius:16px;padding:0 15px;font-size:18px;outline:none;background:white;color:#111827}.input:focus{border-color:#1687ff;box-shadow:0 0 0 3px #1687ff17}.input::placeholder{color:#a3a3a3}
+.amount-buttons,.rate-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.choice{border:1.5px solid var(--line);background:#f8fafc;color:#111827;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:800;min-height:47px;cursor:pointer;flex:1 0 auto}
+.choice.active{background:#eaf4ff;border-color:#1687ff;color:#075db4}
+.custom{flex:0 0 auto}
+.section-gap{margin-top:24px}
+.output{background:#f7f9fc;border-radius:16px;padding:18px 15px;margin-top:20px;text-align:right;font-size:17px;font-weight:850;line-height:1.5}
+.usd-panel{background:#f8fafc;border:1.5px solid var(--line);border-radius:21px;padding:17px;margin-top:15px}
+.usd-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:13px}.usd-top .heading{margin:0}.small-label{font-size:11px;color:#94a3b8}
+.usd-result{background:#fff;border:1.5px solid var(--line);border-radius:15px;padding:15px;margin-top:12px;text-align:right;font-size:16px;font-weight:850;min-height:54px}
+.buttons{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:15px}.primary,.secondary{border:0;border-radius:14px;min-height:51px;padding:0 16px;font-size:13px;font-weight:850;cursor:pointer}.primary{background:var(--navy);color:#fff}.secondary{background:#eef2f7;color:#334155}
+.hidden{display:none!important}
+.calc-key{border:1px solid #e2e8f0;background:#f8fafc;color:#111827;border-radius:12px;min-height:49px;font-size:16px;font-weight:800;cursor:pointer}
+.calc-key.operator{background:#eaf4ff;border-color:#cfe5ff;color:#075db4}
+.calc-key.equals{background:#080f20;border-color:#080f20;color:#fff}
+.calc-key:active{transform:scale(.97)}
+@media(max-width:380px){.top{padding:22px 14px}.main{padding:18px 12px}.panel{padding:15px}.top-actions{gap:5px}.pill{padding:12px 9px}.choice{padding:11px 10px;font-size:13px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <div class="brand"><div class="brand-icon">C</div><div><h1>Commission</h1><p>Real Estate Calculator</p></div></div>
+ <div class="top-actions"><button class="pill" id="smartMode">Smart</button><button class="pill" id="manualMode">Manual</button></div>
+</header>
+<main class="main">
+ <div class="intro"><div><h2>Commission Calculator</h2><p>Use ready-made buttons or switch to Manual to enter an approximate amount.</p></div><div class="intro-icon">🧮</div></div>
+ <section class="panel" style="background:#eff6ff;border:2px solid #1687ff;padding:17px 18px;margin-bottom:15px">
+  <div style="font-size:11px;font-weight:850;letter-spacing:.8px;color:#075db4;text-transform:uppercase">TOTAL COMMISSION</div>
+  <div id="amountHighlightValue" style="font-size:clamp(27px,7vw,36px);font-weight:900;letter-spacing:-.8px;color:#0b1220;margin-top:5px;overflow-wrap:anywhere">0 EGP</div>
+ </section>
+ <section class="panel">
+  <div class="heading">Deal Value (EGP)</div>
+  <input class="input" id="amountInput" inputmode="decimal" placeholder="Enter approximate amount" aria-label="Deal value in EGP">
+  <div class="amount-buttons" id="amountChoices">
+   <button type="button" class="choice" data-amount="5000000">5M</button><button type="button" class="choice" data-amount="10000000">10M</button><button type="button" class="choice" data-amount="20000000">20M</button><button type="button" class="choice" data-amount="30000000">30M</button><button type="button" class="choice" data-amount="40000000">40M</button><button type="button" class="choice" data-amount="50000000">50M</button><button type="button" class="choice" data-amount="100000000">100M</button><button type="button" class="choice" data-amount="200000000">200M</button><button type="button" class="choice" data-amount="300000000">300M</button><button type="button" class="choice" data-amount="400000000">400M</button><button type="button" class="choice" data-amount="500000000">500M</button><button type="button" class="choice" data-amount="600000000">600M</button><button type="button" class="choice" data-amount="700000000">700M</button><button type="button" class="choice" data-amount="800000000">800M</button><button type="button" class="choice" data-amount="900000000">900M</button><button type="button" class="choice" data-amount="1000000000">1B</button><button type="button" class="choice custom" data-amount="custom">Custom</button>
+  </div>
+  <div class="heading section-gap">% Commission</div>
+  <input class="input" id="rateInput" inputmode="decimal" type="number" min="0" max="50" step="0.1" value="2.5" placeholder="Enter percentage" aria-label="Commission percentage">
+  <div class="rate-buttons" id="rateChoices">
+   <button type="button" class="choice" data-rate="0.5">0.5%</button><button type="button" class="choice" data-rate="1">1%</button><button type="button" class="choice" data-rate="1.5">1.5%</button><button type="button" class="choice" data-rate="2">2%</button><button type="button" class="choice active" data-rate="2.5">2.5%</button><button type="button" class="choice" data-rate="3">3%</button><button type="button" class="choice" data-rate="4">4%</button><button type="button" class="choice" data-rate="5">5%</button><button type="button" class="choice" data-rate="7.5">7.5%</button><button type="button" class="choice" data-rate="10">10%</button><button type="button" class="choice" data-rate="12.5">12.5%</button><button type="button" class="choice" data-rate="15">15%</button><button type="button" class="choice" data-rate="20">20%</button><button type="button" class="choice custom" data-rate="custom">Custom</button>
+  </div>
+  <div class="output">Estimated Commission: <span id="commission">0 EGP</span></div>
+ </section>
+ <section class="usd-panel">
+  <div class="usd-top"><div class="heading">USD Conversion (Optional)</div><span class="small-label">Optional</span></div>
+  <div class="small-label" style="text-align:right;margin-bottom:9px">USD = EGP <span id="rateDisplay">—</span></div>
+  <input class="input" id="exchangeRate" inputmode="decimal" type="number" min="0" step="0.01" placeholder="Enter exchange rate">
+  <div class="usd-result">USD Equivalent: <span id="usdResult">—</span></div>
+ </section>
+ <div class="buttons"><button class="primary" id="calculate">Calculate Commission</button><button class="secondary" id="reset">Reset</button></div>
+ <section class="panel" style="margin-top:18px">
+  <div class="card-head"><h2>Standard Calculator</h2><span class="step">BASIC</span></div>
+  <div style="background:#f7f9fc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;text-align:right;margin-bottom:12px;min-height:76px;overflow-wrap:anywhere">
+   <div id="calcExpression" style="font-size:11px;color:#64748b;min-height:16px"></div>
+   <div id="calcValue" style="font-size:28px;font-weight:850;color:#111827;margin-top:4px">0</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+   <button class="calc-key" data-key="AC">AC</button><button class="calc-key" data-key="DEL">DEL</button><button class="calc-key" data-key="%">%</button><button class="calc-key operator" data-key="÷">÷</button>
+   <button class="calc-key" data-key="7">7</button><button class="calc-key" data-key="8">8</button><button class="calc-key" data-key="9">9</button><button class="calc-key operator" data-key="×">×</button>
+   <button class="calc-key" data-key="4">4</button><button class="calc-key" data-key="5">5</button><button class="calc-key" data-key="6">6</button><button class="calc-key operator" data-key="-">−</button>
+   <button class="calc-key" data-key="1">1</button><button class="calc-key" data-key="2">2</button><button class="calc-key" data-key="3">3</button><button class="calc-key operator" data-key="+">+</button>
+   <button class="calc-key" data-key="0" style="grid-column:span 2">0</button><button class="calc-key" data-key=".">.</button><button class="calc-key equals" data-key="=">=</button>
+  </div>
+ </section>
+</main>
+</div>
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const amountInput=$('amountInput'),rateInput=$('rateInput'),exchange=$('exchangeRate');
+const fmt=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(Number.isFinite(n)?n:0);
+const parse=v=>{let n=Number(String(v??'').replace(/,/g,'').trim());return Number.isFinite(n)&&n>0?n:0};
+let mode='smart',chosenAmount=null,chosenRate=2.5;
+function amountButtonsClear(){document.querySelectorAll('[data-amount]').forEach(b=>b.addEventListener('click',()=>{
+ const val=b.dataset.amount;
+ amountButtonsClear();
+ if(val==='custom'){
+   setMode('manual');
+   amountInput.readOnly=false;
+   amountInput.value='';
+   amountInput.dataset.numeric='';
+   amountInput.placeholder='Type amount, e.g. 350,000,000';
+   update();
+   amountInput.focus();
+   return;
+ }
+ b.classList.add('active');
+ setMode('smart');
+ amountInput.value=fmt(Number(val));
+ amountInput.dataset.numeric=val;
+ update();
+}));
+document.querySelectorAll('[data-rate]').forEach(b=>b.classList.remove('active'))}
+function update(){
+ const amount=parse(amountInput.value),rate=Math.min(50,parse(rateInput.value)),commission=amount*rate/100,fx=parse(exchange.value);
+ $('commission').textContent=fmt(commission)+' EGP';
+ if($('amountHighlightValue')) $('amountHighlightValue').textContent=fmt(commission)+' EGP';
+ $('rateDisplay').textContent=fx?fmt(fx):'—';
+ $('usdResult').textContent=fx?fmt(commission/fx)+' USD':'—';
+}
+function setMode(m){
+ mode=m;
+ $('smartMode').style.background=m==='smart'?'#dbeafe':'#fff';
+ $('smartMode').style.color=m==='smart'?'#075db4':'#111827';
+ $('manualMode').style.background=m==='manual'?'#dbeafe':'#fff';
+ $('manualMode').style.color=m==='manual'?'#075db4':'#111827';
+ amountInput.readOnly=m==='smart';
+ rateInput.readOnly=m==='smart';
+ amountInput.placeholder=m==='smart'?'Choose an amount below':'Enter approximate amount';
+ rateInput.placeholder=m==='smart'?'Choose a rate below':'Enter percentage';
+ if(m==='manual'){amountButtonsClear();rateButtonsClear();chosenAmount=null;chosenRate=null}
+ update();
+}
+document.querySelectorAll('[data-amount]').forEach(b=>b.addEventListener('click',()=>{
+ const val=b.dataset.amount;
+ amountButtonsClear();b.classList.add('active');
+ if(val==='custom'){
+   setMode('manual');amountInput.readOnly=false;amountInput.focus();amountInput.value='';
+ }else{
+   setMode('smart');amountInput.value=String(Number(val));amountInput.value=fmt(Number(val));amountInput.dataset.numeric=val;
+   // Formatting commas are removed by parse.
+ }
+ update();
+}));
+document.querySelectorAll('[data-rate]').forEach(b=>b.addEventListener('click',()=>{
+ const val=b.dataset.rate;
+ rateButtonsClear();b.classList.add('active');
+ if(val==='custom'){
+   setMode('manual');
+   rateInput.readOnly=false;
+   rateInput.value='';
+   rateInput.placeholder='Type rate from 0 to 50';
+   update();
+   rateInput.focus();
+ } else {
+   b.classList.add('active');
+   setMode('smart');
+   rateInput.value=val;
+ }
+ update();
+}));
+amountInput.addEventListener('input',()=>{
+ // Keep typing responsive on mobile; format with commas only after leaving the field.
+ amountInput.dataset.numeric=amountInput.value.replace(/,/g,'').replace(/[^0-9.]/g,'');
+ update();
+});
+amountInput.addEventListener('blur',()=>{
+ if(mode==='manual'){
+   const raw=amountInput.value.replace(/,/g,'').trim();
+   const n=Number(raw);
+   if(raw!=='' && Number.isFinite(n) && n>=0){
+     amountInput.value=fmt(n);
+     amountInput.dataset.numeric=String(n);
+   }
+ }
+ update();
+});
+rateInput.addEventListener('input',()=>{
+ if(rateInput.value!==''&&Number(rateInput.value)>50)rateInput.value='50';
+ if(rateInput.value!==''&&Number(rateInput.value)<0)rateInput.value='0';
+ update();
+});
+exchange.addEventListener('input',update);
+$('smartMode').addEventListener('click',()=>setMode('smart'));
+$('manualMode').addEventListener('click',()=>setMode('manual'));
+$('calculate').addEventListener('click',update);
+$('reset').addEventListener('click',()=>{
+ amountInput.value='';amountInput.dataset.numeric='';
+ rateInput.value='2.5';exchange.value='';
+ amountButtonsClear();rateButtonsClear();
+ document.querySelector('[data-rate="2.5"]').classList.add('active');
+ setMode('smart');update();
+});
+setMode('smart');update();
+
+// Independent four-function calculator.
+let calcCurrent='0',calcStored=null,calcOperator=null,calcFresh=false,calcExpression='';
+function prettyCalc(v){ if(v==='Error')return v; const n=Number(v); if(!Number.isFinite(n))return v; if(String(v).endsWith('.'))return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Number(v.slice(0,-1)))+'.'; if(String(v).includes('.') && !calcFresh){const parts=String(v).split('.');return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Number(parts[0]))+'.'+parts[1];} return new Intl.NumberFormat('en-US',{maximumFractionDigits:8}).format(n); }
+function renderCalc(){ $('calcValue').textContent=prettyCalc(calcCurrent); $('calcExpression').textContent=calcExpression; }
+function compute(a,b,op){ if(op==='+')return a+b;if(op==='-')return a-b;if(op==='×')return a*b;if(op==='÷')return b===0?NaN:a/b;return b; }
+document.querySelectorAll('.calc-key').forEach(btn=>btn.addEventListener('click',()=>{
+ const k=btn.dataset.key;
+ if(k==='AC'){calcCurrent='0';calcStored=null;calcOperator=null;calcFresh=false;calcExpression='';}
+ else if(k==='DEL'){calcCurrent=calcCurrent.length>1?calcCurrent.slice(0,-1):'0';calcFresh=false;}
+ else if(k==='.'){if(calcFresh){calcCurrent='0.';calcFresh=false;}else if(!calcCurrent.includes('.'))calcCurrent+='.';}
+ else if(['+','-','×','÷'].includes(k)){
+  const value=Number(calcCurrent);
+  if(calcStored!==null&&calcOperator&&!calcFresh){const r=compute(calcStored,value,calcOperator);calcCurrent=Number.isFinite(r)?String(Number(r.toFixed(8))):'Error';}
+  calcStored=Number(calcCurrent);calcOperator=k;calcExpression=prettyCalc(calcCurrent)+' '+k;calcFresh=true;
+ }else if(k==='%'){calcCurrent=String(Number(calcCurrent)/100);calcFresh=true;}
+ else if(k==='='){
+  if(calcStored!==null&&calcOperator){const a=calcStored,b=Number(calcCurrent),r=compute(a,b,calcOperator);calcExpression=prettyCalc(String(a))+' '+calcOperator+' '+prettyCalc(String(b))+' =';calcCurrent=Number.isFinite(r)?String(Number(r.toFixed(8))):'Error';calcStored=null;calcOperator=null;calcFresh=true;}
+ }else if(/^\d$/.test(k)){
+  if(calcFresh||calcCurrent==='0'||calcCurrent==='Error'){calcCurrent=k;calcFresh=false;}else if(calcCurrent.length<15)calcCurrent+=k;
+ }
+ renderCalc();
+}));
+renderCalc();
+})();
+</script>
+</body></html>
